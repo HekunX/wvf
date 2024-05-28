@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+using Microsoft.JSInterop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security;
@@ -9,10 +11,11 @@ namespace WpfNetFrameWork
 {
     public static class Test
     {
-
-        public static Task Hello()
+        [JSInvokable]
+        public static Task<float> Hello(float value)
         {
-            return Task.CompletedTask;
+            return Task.FromResult(23.2f);
         }
     }
 }
+ 

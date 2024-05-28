@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using System.Windows.Threading;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 
 
@@ -16,16 +19,42 @@ namespace HSoft.WebView.NetFramework.WPF
     {
         private readonly Controll _webView2;
         private readonly Dispatcher _dispatcher;
+        private StaticContentProvider _staticContentProvider;
         internal TaskCompletionSource<object> InitalizedTaskSource = new TaskCompletionSource<object>();
         public WebViewJSRuntime(Controll webView2,Dispatcher dispatcher)
         {
             _webView2 = webView2;
             _dispatcher = dispatcher;
-
+            _staticContentProvider = new StaticContentProvider(new Uri("http://0.0.0.0"), "wwwroot");
+            
             _webView2.CoreWebView2InitializationCompleted += OnCoreWebView2InitializationCompleted;
             _webView2.WebMessageReceived += OnWebMessageReceived;
+            _ = TryInitializeWebView2();
         }
 
+        private static string? GetWebView2UserDataFolder()
+        {
+            if (Assembly.GetEntryAssembly() is { } mainAssembly)
+            {
+                // In case the application is running from a non-writable location (e.g., program files if you're not running
+                // elevated), use our own convention of %LocalAppData%\YourApplicationName.WebView2.
+                // We may be able to remove this if https://github.com/MicrosoftEdge/WebView2Feedback/issues/297 is fixed.
+                var applicationName = mainAssembly.GetName().Name;
+                var result = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    $"{applicationName}.WebView2");
+
+                return result;
+            }
+
+            return null;
+        }
+        private async Task<bool> TryInitializeWebView2()
+        {
+            var env = await CoreWebView2Environment.CreateAsync(userDataFolder: GetWebView2UserDataFolder());
+            await _webView2.EnsureCoreWebView2Async(env);
+            return true;
+        }
         private void OnWebMessageReceived(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
             var json = JsonSerializer.Deserialize<string>(e.WebMessageAsJson);
@@ -54,7 +83,7 @@ namespace HSoft.WebView.NetFramework.WPF
                     }
                 case "initialized":
                     {
-                        InitalizedTaskSource.SetResult(null);
+                        if(!InitalizedTaskSource.Task.IsCompleted) InitalizedTaskSource.SetResult(null);
                         break;
                     }
                 default:
@@ -68,16 +97,12 @@ namespace HSoft.WebView.NetFramework.WPF
         private async void OnCoreWebView2InitializationCompleted(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)
         {
             var coreWebView2 = _webView2.CoreWebView2;
-            var folder = Path.Combine(AppContext.BaseDirectory, "wwwroot");
-            if(Directory.Exists(folder))
-            {
-                coreWebView2.SetVirtualHostNameToFolderMapping("0.0.0.0", folder, CoreWebView2HostResourceAccessKind.Allow);
-            }
-   
+            coreWebView2.AddWebResourceRequestedFilter("http://0.0.0.0/*",CoreWebView2WebResourceContext.All);
+            coreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
+
             coreWebView2.Settings.IsStatusBarEnabled = false;
             coreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             coreWebView2.Settings.IsSwipeNavigationEnabled = false;
-
             if(StaticContentProvider.TryGetFrameworkFile("assets/webview.umd.js", out var stream, out var contentType))
             {
                 using StreamReader sr = new StreamReader(stream);
@@ -100,7 +125,28 @@ window.external.sendMessage = (message) => {
                 throw new Exception("资源框架文件未找到！");
             }
         }
+        public static string RemovePossibleQueryString(string? url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return string.Empty;
+            }
+            var indexOfQueryString = url.IndexOf("?", StringComparison.Ordinal);
+            return (indexOfQueryString == -1)
+                ? url
+                : url.Substring(0, indexOfQueryString);
+        }
+        private void CoreWebView2_WebResourceRequested(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+            var uri = RemovePossibleQueryString(e.Request.Uri);
 
+            if(_staticContentProvider.TryGetResponseContent(uri, true, out var statusCode, out var statusMessage, out var stream, out var headers))
+            {
+               e.Response =   _webView2.CoreWebView2.Environment.CreateWebResourceResponse(stream, statusCode, statusMessage, GetHeaderString(headers));
+            }
+        }
+        private protected static string GetHeaderString(IDictionary<string, string> headers) =>
+    string.Join(Environment.NewLine, headers.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
         protected override void BeginInvokeJS(long taskId, string identifier, string? argsJson, JSCallResultType resultType, long targetInstanceId)
         {
             var json = JsonSerializer.Serialize(new object[] { "BeginInvokeJS", taskId, identifier, argsJson, resultType, targetInstanceId }, JsonSerializerOptions);

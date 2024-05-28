@@ -6,67 +6,68 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop.Implementation;
 
-namespace Microsoft.JSInterop.Infrastructure;
-
-internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamReference>
+namespace Microsoft.JSInterop.Infrastructure
 {
-    private static readonly JsonEncodedText _jsStreamReferenceLengthKey = JsonEncodedText.Encode("__jsStreamReferenceLength");
-
-    private readonly JSRuntime _jsRuntime;
-
-    public JSStreamReferenceJsonConverter(JSRuntime jsRuntime)
+    internal sealed class JSStreamReferenceJsonConverter : JsonConverter<IJSStreamReference>
     {
-        _jsRuntime = jsRuntime;
-    }
+        private static readonly JsonEncodedText _jsStreamReferenceLengthKey = JsonEncodedText.Encode("__jsStreamReferenceLength");
 
-    public override bool CanConvert(Type typeToConvert)
-        => typeToConvert == typeof(IJSStreamReference) || typeToConvert == typeof(JSStreamReference);
+        private readonly JSRuntime _jsRuntime;
 
-    public override IJSStreamReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        long? id = null;
-        long? length = null;
-
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
+        public JSStreamReferenceJsonConverter(JSRuntime jsRuntime)
         {
-            if (reader.TokenType == JsonTokenType.PropertyName)
+            _jsRuntime = jsRuntime;
+        }
+
+        public override bool CanConvert(Type typeToConvert)
+            => typeToConvert == typeof(IJSStreamReference) || typeToConvert == typeof(JSStreamReference);
+
+        public override IJSStreamReference? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            long? id = null;
+            long? length = null;
+
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                if (id is null && reader.ValueTextEquals(JSObjectReferenceJsonWorker.JSObjectIdKey.EncodedUtf8Bytes))
+                if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    reader.Read();
-                    id = reader.GetInt64();
-                }
-                else if (length is null && reader.ValueTextEquals(_jsStreamReferenceLengthKey.EncodedUtf8Bytes))
-                {
-                    reader.Read();
-                    length = reader.GetInt64();
+                    if (id is null && reader.ValueTextEquals(JSObjectReferenceJsonWorker.JSObjectIdKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        id = reader.GetInt64();
+                    }
+                    else if (length is null && reader.ValueTextEquals(_jsStreamReferenceLengthKey.EncodedUtf8Bytes))
+                    {
+                        reader.Read();
+                        length = reader.GetInt64();
+                    }
+                    else
+                    {
+                        throw new JsonException($"Unexcepted JSON property {reader.GetString()}.");
+                    }
                 }
                 else
                 {
-                    throw new JsonException($"Unexpected JSON property {reader.GetString()}.");
+                    throw new JsonException($"Unexcepted JSON token {reader.TokenType}");
                 }
             }
-            else
+
+            if (!id.HasValue)
             {
-                throw new JsonException($"Unexpected JSON token {reader.TokenType}");
+                throw new JsonException($"Required property {JSObjectReferenceJsonWorker.JSObjectIdKey} not found.");
             }
+
+            if (!length.HasValue)
+            {
+                throw new JsonException($"Required property {_jsStreamReferenceLengthKey} not found.");
+            }
+
+            return new JSStreamReference(_jsRuntime, id.Value, length.Value);
         }
 
-        if (!id.HasValue)
+        public override void Write(Utf8JsonWriter writer, IJSStreamReference value, JsonSerializerOptions options)
         {
-            throw new JsonException($"Required property {JSObjectReferenceJsonWorker.JSObjectIdKey} not found.");
+            JSObjectReferenceJsonWorker.WriteJSObjectReference(writer, (JSStreamReference)value);
         }
-
-        if (!length.HasValue)
-        {
-            throw new JsonException($"Required property {_jsStreamReferenceLengthKey} not found.");
-        }
-
-        return new JSStreamReference(_jsRuntime, id.Value, length.Value);
-    }
-
-    public override void Write(Utf8JsonWriter writer, IJSStreamReference value, JsonSerializerOptions options)
-    {
-        JSObjectReferenceJsonWorker.WriteJSObjectReference(writer, (JSStreamReference)value);
     }
 }

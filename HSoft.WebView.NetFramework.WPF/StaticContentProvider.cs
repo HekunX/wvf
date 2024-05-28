@@ -13,19 +13,15 @@ namespace HSoft.WebView.NetFramework.WPF
 {
     public  class StaticContentProvider
     {
-        private readonly IFileProvider _fileProvider;
         private readonly Uri _appBaseUri;
         private readonly string _hostPageRelativePath;
         private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-
-        static StaticContentProvider()
+        private EmbeddedFileProvider _wwrootFileProvider;
+        private static readonly ManifestEmbeddedFileProvider _manifestProvider =
+    new(typeof(StaticContentProvider).Assembly);
+        public StaticContentProvider(Uri appBaseUri, string hostPageRelativePath)
         {
-
-        }
-        public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)
-        {
-
-            _fileProvider = fileProvider ?? throw new ArgumentNullException(nameof(fileProvider));
+            _wwrootFileProvider = new EmbeddedFileProvider(Assembly.GetEntryAssembly());
             _appBaseUri = appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri));
             _hostPageRelativePath = hostPageRelativePath ?? throw new ArgumentNullException(nameof(hostPageRelativePath));
         }
@@ -77,7 +73,7 @@ namespace HSoft.WebView.NetFramework.WPF
         {
             if (!string.IsNullOrEmpty(relativePath))
             {
-                var fileInfo = _fileProvider.GetFileInfo(relativePath);
+                var fileInfo = _wwrootFileProvider.GetFileInfo(Path.Combine(_hostPageRelativePath,relativePath));
                 if (fileInfo.Exists)
                 {
                     content = fileInfo.CreateReadStream();
@@ -94,21 +90,12 @@ namespace HSoft.WebView.NetFramework.WPF
 
         public static bool TryGetFrameworkFile(string relativePath, out Stream content, out string contentType)
         {
-            // 获取当前程序集
-            Assembly assembly = Assembly.GetExecutingAssembly();
-
-            // 获取嵌入的资源名称
-            string[] resourceNames = assembly.GetManifestResourceNames();
-
-            var stream = assembly.GetManifestResourceStream(resourceNames[0]);
-
-
             // We're not trying to simulate everything a real webserver does. We don't need to
             // support querystring parameters, for example. It's enough to require an exact match.
-          
-            if (stream != null)
+            var file = _manifestProvider.GetFileInfo(relativePath);
+            if (file.Exists)
             {
-                content = stream;
+                content = file.CreateReadStream();
                 contentType = GetResponseContentTypeOrDefault(relativePath);
                 return true;
             }

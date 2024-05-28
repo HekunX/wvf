@@ -7,64 +7,68 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-namespace Microsoft.JSInterop.Implementation;
-
-/// <summary>
-/// Implements functionality for <see cref="IJSObjectReference"/>.
-/// </summary>
-public class JSObjectReference : IJSObjectReference
+namespace Microsoft.JSInterop.Implementation
 {
-    private readonly JSRuntime _jsRuntime;
-
-    internal bool Disposed { get; set; }
-
     /// <summary>
-    /// The unique identifier assigned to this instance.
+    /// Implements functionality for <see cref="IJSObjectReference"/>.
     /// </summary>
-    protected internal long Id { get; }
-
-    /// <summary>
-    /// Initializes a new <see cref="JSObjectReference"/> instance.
-    /// </summary>
-    /// <param name="jsRuntime">The <see cref="JSRuntime"/> used for invoking JS interop calls.</param>
-    /// <param name="id">The unique identifier.</param>
-    protected internal JSObjectReference(JSRuntime jsRuntime, long id)
+    public class JSObjectReference : IJSObjectReference
     {
-        _jsRuntime = jsRuntime;
+        private readonly JSRuntime _jsRuntime;
 
-        Id = id;
-    }
+        internal bool Disposed { get; set; }
 
-    /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-    {
-        ThrowIfDisposed();
+        /// <summary>
+        /// The unique identifier assigned to this instance.
+        /// </summary>
+        protected internal long Id { get; }
 
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, args);
-    }
-
-    /// <inheritdoc />
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
-    {
-        ThrowIfDisposed();
-
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        if (!Disposed)
+        /// <summary>
+        /// Inititializes a new <see cref="JSObjectReference"/> instance.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSRuntime"/> used for invoking JS interop calls.</param>
+        /// <param name="id">The unique identifier.</param>
+        protected internal JSObjectReference(JSRuntime jsRuntime, long id)
         {
-            Disposed = true;
+            _jsRuntime = jsRuntime;
 
-            await _jsRuntime.InvokeVoidAsync("DotNet.disposeJSObjectReferenceById", Id);
+            Id = id;
         }
-    }
 
-    /// <inheritdoc />
-    protected void ThrowIfDisposed()
-    {
-        //ObjectDisposedException.ThrowIf(Disposed, this);
+        /// <inheritdoc />
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.InvokeAsync<TValue>(Id, identifier, args);
+        }
+
+        /// <inheritdoc />
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.InvokeAsync<TValue>(Id, identifier, cancellationToken, args);
+        }
+
+        /// <inheritdoc />
+        public async ValueTask DisposeAsync()
+        {
+            if (!Disposed)
+            {
+                Disposed = true;
+
+                await _jsRuntime.InvokeVoidAsync("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
+            }
+        }
+
+        /// <inheritdoc />
+        protected void ThrowIfDisposed()
+        {
+            if (Disposed)
+            {
+                throw new ObjectDisposedException(GetType().Name);
+            }
+        }
     }
 }

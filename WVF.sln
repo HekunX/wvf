@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{171B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfNetFrameWork", "WpfNetFrameWork\WpfNetFrameWork.csproj", "{50235E2C-EC82-4DF3-97AA-E609C00F2A50}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HSoft.WebView.NetFramework.WPFTests", "HSoft.WebView.NetFramework.WPFTests\HSoft.WebView.NetFramework.WPFTests.csproj", "{3F384CA7-5130-4713-9F19-82F946B3E581}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,6 +37,10 @@ Global
 		{50235E2C-EC82-4DF3-97AA-E609C00F2A50}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50235E2C-EC82-4DF3-97AA-E609C00F2A50}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50235E2C-EC82-4DF3-97AA-E609C00F2A50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F384CA7-5130-4713-9F19-82F946B3E581}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F384CA7-5130-4713-9F19-82F946B3E581}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F384CA7-5130-4713-9F19-82F946B3E581}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F384CA7-5130-4713-9F19-82F946B3E581}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

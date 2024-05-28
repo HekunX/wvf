@@ -3,45 +3,43 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.JSInterop.Implementation;
 
-/// <summary>
-/// Implements functionality for <see cref="IJSInProcessObjectReference"/>.
-/// </summary>
-public partial class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
+namespace Microsoft.JSInterop.Implementation
 {
-    private readonly JSInProcessRuntime _jsRuntime;
-
     /// <summary>
-    /// Initializes a new <see cref="JSInProcessObjectReference"/> instance.
+    /// Implements functionality for <see cref="IJSInProcessObjectReference"/>.
     /// </summary>
-    /// <param name="jsRuntime">The <see cref="JSInProcessRuntime"/> used for invoking JS interop calls.</param>
-    /// <param name="id">The unique identifier.</param>
-    protected internal JSInProcessObjectReference(JSInProcessRuntime jsRuntime, long id) : base(jsRuntime, id)
+    public class JSInProcessObjectReference : JSObjectReference, IJSInProcessObjectReference
     {
-        _jsRuntime = jsRuntime;
-    }
+        private readonly JSInProcessRuntime _jsRuntime;
 
-    /// <inheritdoc />
-    
-    public TValue Invoke<TValue>(string identifier, params object?[]? args)
-    {
-        ThrowIfDisposed();
-
-        return _jsRuntime.Invoke<TValue>(identifier, Id, args);
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (!Disposed)
+        /// <summary>
+        /// Inititializes a new <see cref="JSInProcessObjectReference"/> instance.
+        /// </summary>
+        /// <param name="jsRuntime">The <see cref="JSInProcessRuntime"/> used for invoking JS interop calls.</param>
+        /// <param name="id">The unique identifier.</param>
+        protected internal JSInProcessObjectReference(JSInProcessRuntime jsRuntime, long id) : base(jsRuntime, id)
         {
-            Disposed = true;
+            _jsRuntime = jsRuntime;
+        }
 
-            //DisposeJSObjectReferenceById(Id);
+        /// <inheritdoc />
+        public TValue Invoke<TValue>(string identifier, params object?[]? args)
+        {
+            ThrowIfDisposed();
+
+            return _jsRuntime.Invoke<TValue>(identifier, Id, args);
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            if (!Disposed)
+            {
+                Disposed = true;
+
+                _jsRuntime.InvokeVoid("DotNet.jsCallDispatcher.disposeJSObjectReferenceById", Id);
+            }
         }
     }
-
-    
-    //private static partial void DisposeJSObjectReferenceById([JSMarshalAs<JSType.Number>] long id);
 }

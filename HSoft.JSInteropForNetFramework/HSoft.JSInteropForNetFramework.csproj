@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <LangVersion>11.0</LangVersion>
     <FileAlignment>512</FileAlignment>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -40,6 +41,7 @@
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
     </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
@@ -54,8 +56,8 @@
     <Reference Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Text.Encodings.Web.8.0.0\lib\net462\System.Text.Encodings.Web.dll</HintPath>
     </Reference>
-    <Reference Include="System.Text.Json, Version=8.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Text.Json.8.0.3\lib\net462\System.Text.Json.dll</HintPath>
+    <Reference Include="System.Text.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Json.8.0.0\lib\net462\System.Text.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
@@ -71,6 +73,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArrayBuilder.cs" />
     <Compile Include="DotNetObjectReference.cs" />
     <Compile Include="DotNetObjectReferenceOfT.cs" />
     <Compile Include="DotNetStreamReference.cs" />
@@ -79,11 +82,12 @@
     <Compile Include="IJSObjectReference.cs" />
     <Compile Include="IJSRuntime.cs" />
     <Compile Include="IJSStreamReference.cs" />
+    <Compile Include="IJSUnmarshalledObjectReference.cs" />
+    <Compile Include="IJSUnmarshalledRuntime.cs" />
     <Compile Include="Implementation\JSInProcessObjectReference.cs" />
     <Compile Include="Implementation\JSObjectReference.cs" />
     <Compile Include="Implementation\JSObjectReferenceJsonWorker.cs" />
     <Compile Include="Implementation\JSStreamReference.cs" />
-    <Compile Include="Infrastructure\ArrayBuilder.cs" />
     <Compile Include="Infrastructure\ByteArrayJsonConverter.cs" />
     <Compile Include="Infrastructure\DotNetDispatcher.cs" />
     <Compile Include="Infrastructure\DotNetInvocationInfo.cs" />
@@ -91,14 +95,14 @@
     <Compile Include="Infrastructure\DotNetObjectReferenceJsonConverter.cs" />
     <Compile Include="Infrastructure\DotNetObjectReferenceJsonConverterFactory.cs" />
     <Compile Include="Infrastructure\DotNetStreamReferenceJsonConverter.cs" />
+    <Compile Include="Infrastructure\FloatConverter.cs" />
     <Compile Include="Infrastructure\IDotNetObjectReference.cs" />
     <Compile Include="Infrastructure\IJSVoidResult.cs" />
-    <Compile Include="Infrastructure\JSCallResultTypeHelper.cs" />
     <Compile Include="Infrastructure\JSObjectReferenceJsonConverter.cs" />
     <Compile Include="Infrastructure\JSStreamReferenceJsonConverter.cs" />
-    <Compile Include="Infrastructure\LinkerFlags.cs" />
     <Compile Include="Infrastructure\TaskGenericsUtil.cs" />
     <Compile Include="JSCallResultType.cs" />
+    <Compile Include="JSCallResultTypeHelper.cs" />
     <Compile Include="JSDisconnectedException.cs" />
     <Compile Include="JSException.cs" />
     <Compile Include="JSInProcessObjectReferenceExtensions.cs" />
