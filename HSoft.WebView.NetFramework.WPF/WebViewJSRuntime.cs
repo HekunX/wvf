@@ -142,7 +142,7 @@ window.external.sendMessage = (message) => {
 
             if(_staticContentProvider.TryGetResponseContent(uri, true, out var statusCode, out var statusMessage, out var stream, out var headers))
             {
-               e.Response =   _webView2.CoreWebView2.Environment.CreateWebResourceResponse(stream, statusCode, statusMessage, GetHeaderString(headers));
+               e.Response =   _webView2.CoreWebView2.Environment.CreateWebResourceResponse(new AutoCloseOnReadCompleteStream(stream), statusCode, statusMessage, GetHeaderString(headers));
             }
         }
         private protected static string GetHeaderString(IDictionary<string, string> headers) =>
