@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
 using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -13,23 +14,14 @@ namespace HSoft.JSRuntimeBase
 {
     public abstract class WebViewJSRuntime : JSRuntime
     {
-        internal TaskCompletionSource InitalizedTaskSource = new TaskCompletionSource();
         public WebViewJSRuntime()
         {
         }
-        public async Task AttatchObjectToWindowAsync<T>(string objectName, T o) where T : class
-        {
-            if (!InitalizedTaskSource.Task.IsCompleted)
-            {
-                await InitalizedTaskSource.Task;
-            }
-            await this.InvokeVoidAsync("_registerInstance", objectName, DotNetObjectReference.Create(o));
-        }
-
 
         protected abstract void PostWebMessageAsString(string  message);
         protected void OnWebMessageReceived(string json)
         {
+            //json = JsonSerializer.Deserialize<string>(json);
             var objects = JsonSerializer.Deserialize<JsonElement[]>(json, JsonSerializerOptions);
             var messageType = objects[0].GetString();
             switch (messageType)
@@ -53,13 +45,9 @@ namespace HSoft.JSRuntimeBase
                         DotNetDispatcher.EndInvokeJS(this, resultOrError);
                         break;
                     }
-                case "initialized":
+                case "ReceiveByteArrayFromJS":
                     {
-                        if(!InitalizedTaskSource.Task.IsCompleted)
-                        {
-                            InitalizedTaskSource.SetResult();
-                        }
-    
+                        DotNetDispatcher.ReceiveByteArray(this, objects[1].GetInt32(), objects[2].GetBytesFromBase64());
                         break;
                     }
                 default:
@@ -83,6 +71,11 @@ namespace HSoft.JSRuntimeBase
     ? invocationResult.ResultJson
     : invocationResult.Exception.ToString();
             var json = JsonSerializer.Serialize(new object[] { "EndInvokeDotNet", invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage }, JsonSerializerOptions);
+            PostWebMessageAsString(json);
+        }
+        protected override void SendByteArray(int id, byte[] data)
+        {
+            var json = JsonSerializer.Serialize(new object[] { "SendByteArrayToJS", id, Convert.ToBase64String(data) }, JsonSerializerOptions);
             PostWebMessageAsString(json);
         }
     }

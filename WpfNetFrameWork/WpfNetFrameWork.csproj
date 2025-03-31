@@ -55,12 +55,6 @@
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*">
     </EmbeddedResource>
-    <Reference Include="HSoft.JSInteropForNetFramework, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\HSoft.JSInteropForNetFramework.1.0.1\lib\net472\HSoft.JSInteropForNetFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="HSoft.WebView.NetFramework.WPF, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\HSoft.WebView.NetFramework.WPF.1.0.3\lib\net472\HSoft.WebView.NetFramework.WPF.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions, Version=2.2.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNetCore.Hosting.Abstractions.2.2.0\lib\netstandard2.0\Microsoft.AspNetCore.Hosting.Abstractions.dll</HintPath>
     </Reference>
@@ -125,6 +119,9 @@
       <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
       <Private>True</Private>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -353,9 +350,14 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="runtimes\win-arm64\native\WebView2Loader.dll" />
-    <Content Include="runtimes\win-x64\native\WebView2Loader.dll" />
-    <Content Include="runtimes\win-x86\native\WebView2Loader.dll" />
+    <ProjectReference Include="..\HSoft.JSInteropForNetFramework\HSoft.JSInteropForNetFramework.csproj">
+      <Project>{29EB5D69-B80E-4C25-B647-88867B76EC2E}</Project>
+      <Name>HSoft.JSInteropForNetFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HSoft.WebView.NetFramework.WPF\HSoft.WebView.NetFramework.WPF.csproj">
+      <Project>{d5174fa8-58fc-4206-898c-13f9417d23e9}</Project>
+      <Name>HSoft.WebView.NetFramework.WPF</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Web.WebView2.1.0.2478.35\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.2478.35\build\Microsoft.Web.WebView2.targets')" />

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,12 +17,11 @@ namespace HSoft.JSRuntimeBase
         private readonly Uri _appBaseUri;
         private readonly string _hostPageRelativePath;
         private static readonly FileExtensionContentTypeProvider ContentTypeProvider = new();
-        private static readonly ManifestEmbeddedFileProvider _manifestProvider =
-            new(typeof(StaticContentProvider).Assembly);
+        private static readonly ManifestEmbeddedFileProvider _manifestProvider = new(typeof(StaticContentProvider).Assembly);
 
-        public StaticContentProvider(IFileProvider fileProvider, Uri appBaseUri, string hostPageRelativePath)
+        public StaticContentProvider(IFileProvider fileProvider,Uri appBaseUri, string hostPageRelativePath)
         {
-            _fileProvider = fileProvider ?? throw new ArgumentNullException(nameof(fileProvider));
+            _fileProvider = fileProvider;
             _appBaseUri = appBaseUri ?? throw new ArgumentNullException(nameof(appBaseUri));
             _hostPageRelativePath = hostPageRelativePath ?? throw new ArgumentNullException(nameof(hostPageRelativePath));
         }
@@ -73,7 +73,7 @@ namespace HSoft.JSRuntimeBase
         {
             if (!string.IsNullOrEmpty(relativePath))
             {
-                var fileInfo = _fileProvider.GetFileInfo(relativePath);
+                var fileInfo = _fileProvider.GetFileInfo(Path.Combine(_hostPageRelativePath, relativePath));
                 if (fileInfo.Exists)
                 {
                     content = fileInfo.CreateReadStream();

@@ -57,8 +57,8 @@ namespace HSoft.WebView.NetFramework.WPF
         }
         private void OnWebMessageReceived(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2WebMessageReceivedEventArgs e)
         {
-            var json = JsonSerializer.Deserialize<string>(e.WebMessageAsJson);
-            var objects = JsonSerializer.Deserialize<JsonElement[]>(json, JsonSerializerOptions);
+            //var json = JsonSerializer.Deserialize<string>(e.WebMessageAsJson);
+            var objects = JsonSerializer.Deserialize<JsonElement[]>(e.WebMessageAsJson, JsonSerializerOptions);
             var messageType = objects[0].GetString();
             switch (messageType)
             {
@@ -81,9 +81,9 @@ namespace HSoft.WebView.NetFramework.WPF
                         DotNetDispatcher.EndInvokeJS(this, resultOrError);
                         break;
                     }
-                case "initialized":
+                case "ReceiveByteArrayFromJS":
                     {
-                        if(!InitalizedTaskSource.Task.IsCompleted) InitalizedTaskSource.SetResult(null);
+                        DotNetDispatcher.ReceiveByteArray(this, objects[1].GetInt32(), objects[2].GetBytesFromBase64());
                         break;
                     }
                 default:
@@ -94,7 +94,7 @@ namespace HSoft.WebView.NetFramework.WPF
 
         }
 
-        private async void OnCoreWebView2InitializationCompleted(object? sender, Microsoft.Web.WebView2.Core.CoreWebView2InitializationCompletedEventArgs e)
+        private async void OnCoreWebView2InitializationCompleted(object? sender, CoreWebView2InitializationCompletedEventArgs e)
         {
             var coreWebView2 = _webView2.CoreWebView2;
             coreWebView2.AddWebResourceRequestedFilter("http://0.0.0.0/*",CoreWebView2WebResourceContext.All);
@@ -107,18 +107,8 @@ namespace HSoft.WebView.NetFramework.WPF
             {
                 using StreamReader sr = new StreamReader(stream);
                 var script = sr.ReadToEnd();
-                var beforeScript = @"
-window.chrome.webview.addEventListener('message', e => {
 
-    window.external.onReceiveMessage(e.data);
-});
-
-window.external.sendMessage = (message) => {
-    window.chrome.webview.postMessage(message);
-};
-
-";
-                await coreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(beforeScript + script);
+                await coreWebView2.AddScriptToExecuteOnDocumentCreatedAsync(script);
             }
             else
             {
@@ -162,6 +152,14 @@ window.external.sendMessage = (message) => {
     ? invocationResult.ResultJson
     : invocationResult.Exception.ToString();
             var json = JsonSerializer.Serialize(new object[] { "EndInvokeDotNet", invocationInfo.CallId, invocationResult.Success, resultJsonOrErrorMessage }, JsonSerializerOptions);
+            _dispatcher.InvokeAsync(() =>
+            {
+                _webView2.CoreWebView2.PostWebMessageAsString(json);
+            });
+        }
+        protected override void SendByteArray(int id, byte[] data)
+        {
+            var json = JsonSerializer.Serialize(new object[] { "SendByteArrayToJS", id, Convert.ToBase64String(data) }, JsonSerializerOptions);
             _dispatcher.InvokeAsync(() =>
             {
                 _webView2.CoreWebView2.PostWebMessageAsString(json);

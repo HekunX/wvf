@@ -2,12 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>net8</TargetFramework>
-
+	  <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="assets\webview.umd.js" />
-  </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="assets\webview.umd.js" />

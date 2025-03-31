@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -38,6 +39,9 @@ namespace WpfNetFrameWork
             //    int errorCode = Marshal.GetLastWin32Error();
             //    throw new Exception($"Failed to load unmanaged DLL. Error code: {errorCode}");
             //}
+            var a = 23.2f;
+            var v = JsonSerializer.Serialize(a);
+            var b= Newtonsoft.Json.JsonConvert.SerializeObject(a);
             InitializeComponent();
         }
     }
