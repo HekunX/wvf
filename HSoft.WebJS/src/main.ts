@@ -26,7 +26,7 @@ function beginInvokeDotNetFromJS(
   dotNetObjectId: number | null,
   argsJson: string
 ): void {
-  console.log("beginInvokeDotNetFromJS");
+
   window.chrome.webview.postMessage([
     "beginInvokeDotNetFromJS",
     callId ? callId.toString() : null,
@@ -42,7 +42,7 @@ function endInvokeJSFromDotNet(
   succeeded: boolean,
   resultOrError: any
 ): void {
-  console.log("beginInvokeDotNetFromJS");
+
   window.chrome.webview.postMessage([
     "endInvokeJSFromDotNet",
     callId ? callId.toString() : null,

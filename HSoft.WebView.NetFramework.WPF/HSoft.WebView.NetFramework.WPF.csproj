@@ -287,12 +287,6 @@
     <EmbeddedResource Include="assets\webview.umd.js" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HSoft.JSInteropForNetFramework\HSoft.JSInteropForNetFramework.csproj">
-      <Project>{29eb5d69-b80e-4c25-b647-88867b76ec2e}</Project>
-      <Name>HSoft.JSInteropForNetFramework</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -305,6 +299,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Costura64\WebView2Loader.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HSoft.JSInteropForNetFramework\HSoft.JSInteropForNetFramework.csproj">
+      <Project>{29eb5d69-b80e-4c25-b647-88867b76ec2e}</Project>
+      <Name>HSoft.JSInteropForNetFramework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Web.WebView2.1.0.2478.35\build\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.2478.35\build\Microsoft.Web.WebView2.targets')" />
